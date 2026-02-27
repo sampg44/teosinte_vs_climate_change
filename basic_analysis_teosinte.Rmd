@@ -1,0 +1,233 @@
+---
+title: "Basic stats about teosinte data"
+author: "Samantha Melissa Pacheco Gómez"
+date: '`r Sys.Date()`'
+output: 
+  pdf_document:
+    latex_engine: pdflatex
+header-includes:
+   - \usepackage{fvextra}
+   - \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+
+# 1. Rutas de librerías
+.libPaths(c("/home/sam/R/x86_64-pc-linux-gnu-library/4.5", .libPaths()))
+
+# 2. Configuración de opciones de sistema
+options(width = 60)
+
+# 3. Hook robusto para evitar que el output (##) se corte
+# Esta versión es autocontenida para evitar el error de "old_output"
+knit_hooks$set(output = function(x, options) {
+  if (!is.null(options$linewidth)) {
+    x <- strwrap(x, width = options$linewidth, simplify = FALSE)
+    x <- sapply(x, paste, collapse = "\n")
+  }
+  # Usamos la sintaxis directa para no depender de variables externas
+  knitr::render_markdown()
+  paste0("\n\n```\n", paste(x, collapse = "\n"), "\n```\n")
+})
+
+# 4. Configuración de knitr
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  tidy = TRUE, 
+  tidy.opts = list(width.cutoff = 60),
+  linewidth = 60
+)
+```
+
+
+## Introducción
+
+Vamos a analizar lo más básico de la metadata de teosintes del artículo "Genomic diversity and population structure of teosinte (Zea spp.) and its conservation implications" (https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0291944), descargados de: [https://doi.org/10.5061/dryad.2547d7wxp](https://doi.org/10.5061/dryad.2547d7wxp)
+
+```{r}
+
+Data = read.csv2("/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/data_teosinte.csv", header = TRUE, sep=",",as.is =FALSE) #cargar datos
+
+```
+
+
+# summary stats
+```{r,linewidth=60}
+str(Data)
+summary(Data)
+colnames(Data)
+```
+
+
+
+## Preguntas básicas
+
+### ¿Cuántas variantes por población?
+
+Primero, vemos cuántos individuos hay por cada población solo por curiosidad.
+
+```{r}
+# individuos por población (POB_CODE)
+ind_por_pob <- sort(table(Data$POB_CODE), decreasing = TRUE)
+ind_por_pob
+length(ind_por_pob)   # número de poblaciones (en la metadata son 74 niveles)
+```
+
+
+Para ver las variantes por población, primero unimos la metadata con los genotipos para saber a qué población pertenece cada ID
+
+```{r}
+fam <- read.table("/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all.fam", header=FALSE, stringsAsFactors=FALSE)
+colnames(fam) <- c("FID","IID","PID","MID","SEX","PHENO")
+
+# unir con metadata: IID == Sample_name
+meta_fam <- merge(fam, Data, by.x="IID", by.y="Sample_name", all.x=TRUE)
+
+# checar cuántos match hubo
+sum(!is.na(meta_fam$POB_CODE))
+```
+Ahora hay que contar SNPs polimórficos por población con genotipos
+
+
+```{r, message=FALSE, results='hide'}
+library(SNPRelate, lib.loc = "/home/sam/R/x86_64-pc-linux-gnu-library/4.5")
+
+snpgdsBED2GDS(bed.fn="/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all.bed",
+              bim.fn="/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all.bim",
+              fam.fn="/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all.fam",
+              out.gdsfn="teosinte.gds")
+
+genofile <- snpgdsOpen("teosinte.gds")
+```
+
+```{r,linewidth=60}
+
+
+# vector población por individuo en el mismo orden del GDS
+# (usa meta_fam, pero asegurándote que esté en el mismo orden que sample.id)
+samp <- read.gdsn(index.gdsn(genofile, "sample.id"))
+pop  <- meta_fam$POB_CODE[match(samp, meta_fam$IID)]
+
+# contar SNPs polimórficos por población
+pops <- sort(unique(pop[!is.na(pop)]))
+
+res <- data.frame(POB_CODE=pops, n_poly=NA, n_snps=NA, n_ind=NA)
+
+for (i in seq_along(pops)) {
+  p <- pops[i]
+  idx <- which(pop == p)
+  af <- snpgdsSNPRateFreq(genofile, sample.id=samp[idx])
+  # af$MinorFreq = MAF por SNP dentro de la población
+  res$n_poly[i] <- sum(af$MinorFreq > 0, na.rm=TRUE)
+  res$n_snps[i] <- length(af$MinorFreq)
+  res$n_ind[i]  <- length(idx)
+}
+
+res[order(res$n_poly, decreasing=TRUE), ]
+snpgdsClose(genofile)
+```
+
+
+
+### ¿Geolocalización de cada individuo?
+Sí nos proporcionan la ubicación geográfica de cada individuo, a continuación está una clasificación por población.
+
+```{r}
+
+Data$Latitude  <- as.numeric(as.character(Data$Latitude))
+Data$Longitude <- as.numeric(as.character(Data$Longitude))
+
+library(dplyr)
+
+geo_pop <- Data %>%
+  group_by(POB_CODE) %>%
+  summarise(
+    n_ind = n(),
+    lat = mean(Latitude, na.rm=TRUE),
+    lon = mean(Longitude, na.rm=TRUE),
+    alt_mean = mean(Altitude, na.rm=TRUE),
+    lat_min = min(Latitude, na.rm=TRUE),
+    lat_max = max(Latitude, na.rm=TRUE),
+    lon_min = min(Longitude, na.rm=TRUE),
+    lon_max = max(Longitude, na.rm=TRUE),
+    .groups="drop"
+  ) %>%
+  arrange(POB_CODE)
+
+geo_pop
+```
+
+
+Este otro código fue sugerido por chat sobre "poblaciones inconsistentes" y se refiere a poblaciones muy dispersas que podrían estar mal etiquetados o ser una mezcla de poblaciones diferentes, tener un error en la metadata o tener coordenadas incorrectas.
+Pero yo creo que no, que simplemente no conoce México.
+
+```{r}
+geo_pop %>%
+  mutate(lat_range = lat_max - lat_min,
+         lon_range = lon_max - lon_min) %>%
+  arrange(desc(lat_range + lon_range)) %>%
+  head(15)
+```
+
+
+### Fecha específica de recolección o gradiente de varias décadas
+
+```{r}
+table(Data$Sampling_date) |> sort(decreasing=TRUE)
+
+range(Data$Sampling_date, na.rm=TRUE)
+
+hist(Data$Sampling_date,
+     breaks = 20,
+     col = "deepskyblue3",
+     border = "white",
+     main = "Distribución de años de muestreo",
+     xlab = "Año de muestreo",
+     ylab = "Número de individuos")
+```
+
+
+### ¿altitud, temperatura?
+
+No contamos con variables climáticas, habría que checar WorldClim.
+
+Pero en efecto, tenemos altitud, latitud y longitud de cada individuo y podemos verlo en la ubicación geográfica.
+
+### ¿posición genómica aproximada?
+
+```{r}
+bim <- read.table("/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all.bim", header=FALSE, stringsAsFactors=FALSE)
+colnames(bim) <- c("CHR","SNP","CM","BP","A1","A2")
+
+table(bim$CHR)              # SNPs por cromosoma
+summary(bim$BP)             # resumen de posiciones
+head(bim)
+
+library(dplyr)
+bim %>%
+  group_by(CHR) %>%
+  summarise(n_snps=n(), min_BP=min(BP), max_BP=max(BP), .groups="drop") %>%
+  arrange(CHR)
+```
+
+
+
+
+# ¿ quién es la referencia?
+
+draft ZeaGBSv2.7.
+
+
+### Notas finales
+
+Se utilizó ChatGPT para la realización de estos códigos de análisis de los archivos bed, bim ,fam.
+
+Faltaría revisar y conectar las variables climáticas a cada individuo o población segun su ubicación geográfica y año de recolección.
+
+Duda: ¿es suficiente el año de recolección para asumir cómo estuvo el clima en la recolección partiendo de que en distintas estaciones o momentos climáticos del año se observa algo distinto?
+
+¿Las coordenadas de altitud, longitud y latitud son por población o por individuo?
+
+
+

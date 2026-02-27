@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.gds
+*.zip
+*.Rproj
+*.bed
+*.bim
+*.fam
