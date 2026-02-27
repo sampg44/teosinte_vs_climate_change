@@ -226,6 +226,8 @@ Se utilizó ChatGPT para la realización de estos códigos de análisis de los a
 Faltaría revisar y conectar las variables climáticas a cada individuo o población segun su ubicación geográfica y año de recolección.
 
 Duda: ¿es suficiente el año de recolección para asumir cómo estuvo el clima en la recolección partiendo de que en distintas estaciones o momentos climáticos del año se observa algo distinto?
+sigo teniendo la duda
+
 
 ¿Las coordenadas de altitud, longitud y latitud son por población o por individuo?
 
