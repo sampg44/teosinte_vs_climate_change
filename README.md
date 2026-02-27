@@ -1,16 +1,24 @@
 
-# Exploración de Metadatos de Proyecto de Investigación sobre especies de Teosinte :)
+# Proyecto de Investigación sobre especies de Teocintle o Teosinte :)
 
 Este repositorio contiene los scripts iniciales para la exploración de datos genómicos de diferentes especies de Teosintes (Zea mays ssp. *)
 
-## Objetivo del archivo actual
-El script `basic_analysis_teosinte.Rmd` tiene como fin principal la **exploración básica de metadatos**. 
+**topic: conservation genomics of native maize**
 
-Es una etapa de reconocimiento de los datos previos a cualquier análisis formal.
+## Descripción del proyecto
 
-El pdf solo muestra el renderizado del mismo para una visualización más fácil.
+Este proyecto tiene como objetivo investigar la relación directa entre variantes genéticas específicas y variables ambientales en diversas poblaciones de teosinte (Zea spp.).
+Mediante la integración de datos genómicos y metadatos ambientales, el trabajo busca identificar cómo factores ambientales específicos han moldeado la diversidad genómica de estas poblaciones. La metodología se basa en el procesamiento estadístico de estos conjuntos de datos para detectar señales de adaptación local vinculadas a condiciones como la temperatura o la precipitación. El propósito final es generar proyecciones que permitan estimar la respuesta y vulnerabilidad de estas poblaciones frente a nuevos escenarios de cambio climático. 
+Este trabajo representa una línea de investigación que estoy desarrollando actualmente en el Ecology and Evolution Lab, parte del LIIGH (Laboratorio Internacional de Investigación sobre el Genoma Humano).
 
-## Líneas de investigación futuras
+
+## Archivos contenidos
+### Etapa de reconocimiento de los datos
+- El script `basic_analysis_teosinte.Rmd` tiene como fin principal la **exploración básica de metadatos**. 
+- `basic_analysis_teosinte.pdf` solo muestra el renderizado del mismo para una visualización más fácil.
+
+
+## Metas pendientes
 A partir de estos datos, el proyecto busca:
 - Identificar relaciones entre variantes genéticas y variables ambientales.
 - Realizar proyecciones basadas en escenarios de cambio climático (ej. temperatura).
@@ -20,7 +28,5 @@ Datos recuperados del artículo: **Genomic diversity and population structure of
 
 Descargados de: https://doi.org/10.5061/dryad.2547d7wxp
 
-## Disclaimer
-Después de borrar dos repositorios, este es el bueno yo espero, ¡mi primer commit oficial en el ecoevolab!, no he hecho mucho pero este es el trabajo de la semana del 17 al 24 de febrero y pelearme con github es el de ésta que está corriendo, no he llorado y supongo que es bueno, me parece un buen avance.
-
-Espero que nadie lea esto.
+## Notas
+Este es mi primer proyecto individual, recibo cualquier sugerencia, apoyo o comentarios.
