@@ -13,15 +13,9 @@
 # 1. rutas
 # ========
 
-# del data original completo
-# ruta_bfile    <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all"
-# ruta_metadata <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/data_teosinte.csv"
-# ruta_salida   <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/matriz_frecuencia_poblacional.rds"
-
-# del dataset recortado
-ruta_bfile    <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/podado_ld"
+ruta_bfile    <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/T3604_33929_all"
 ruta_metadata <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/data_teosinte.csv"
-ruta_salida   <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/matriz_frecuencia_poblacional_253.rds"
+ruta_salida   <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/matriz_frecuencia_poblacional.rds"
 
 
 # ============================================================
@@ -133,22 +127,3 @@ if (n_na > 0) {
 saveRDS(matriz_frecuencia, ruta_salida)
 cat("\nGuardada en:", ruta_salida, "\n")
 cat("Para volver a usarla despues: matriz_frecuencia <- readRDS('", ruta_salida, "')\n", sep = "")
-
-#-------------
-# qnes son
-#------------
-
-matriz_frecuencia <- readRDS("/home/sam/Documents/sur_ecoevo_lab/data/teosinte/archivos/matriz_frecuencia_poblacional.rds")
-
-na_por_poblacion <- sort(rowSums(is.na(matriz_frecuencia)), decreasing = TRUE)
-head(na_por_poblacion, 10)   # poblaciones con más NAs
-
-na_por_snp <- sort(colSums(is.na(matriz_frecuencia)), decreasing = TRUE)
-head(na_por_snp, 10)         # SNPs con más NAs
-
-table(poblacion_de_cada_individuo)[names(head(na_por_poblacion, 10))]
-
-sum(na_por_poblacion > 0) # cuántas poblaciones tienen al menos un NA
-
-#cuántos SNPs no tienen ningún NA 
-sum(colSums(is.na(matriz_frecuencia)) == 0)
