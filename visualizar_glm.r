@@ -37,7 +37,7 @@ carpeta_figuras <- "/home/sam/Documents/sur_ecoevo_lab/exp/oct_2026/24_oct/figur
 alfa <- 0.05                  # nivel de significancia ANTES de corregir por pruebas múltiples
 excluir_degenerados <- TRUE   # quita SNPs con ajuste inestable (ver sección 2)
 hacer_qq     <- TRUE          # QQ-plot por variable
-hacer_volcan <- TRUE          # volcán por variable
+hacer_volcan <- FALSE          # volcán por variable
 dir.create(carpeta_figuras, recursive = TRUE, showWarnings = FALSE)
 
 # Paleta colores
@@ -99,7 +99,7 @@ figuras_por_variable <- function(d, etiqueta) {
   d$observado <- -log10(d$p_valor)
   d$grupo_hit <- factor(ifelse(d$hit, "si", "no"), levels = c("no", "si"))
   etiqueta_umbral <- sprintf("Umbral de Bonferroni (p = %.1e)", umbral_p)
-  etiqueta_hit <- "Supera el umbral de Bonferroni"
+  
   
   #  QQ-plot 
   if (hacer_qq) {
@@ -180,7 +180,7 @@ if (length(res) >= 2) {
               hjust = -0.15, size = 3.4, colour = col_texto) +
     scale_x_continuous(limits = c(0, max(resumen$lambda) * 1.5)) +
     labs(title = "λ por variable bioclimática", x = "λ (lambda)", y = NULL) + tema
-  ggsave(file.path(carpeta_figuras, "B1_lambda_por_variable.png"), g4, width = 7, height = 1.5 + 0.35 * length(vars), dpi = 150, bg = "white")
+  ggsave(file.path(carpeta_figuras, "lambda_por_variable.png"), g4, width = 7, height = 1.5 + 0.35 * length(vars), dpi = 150, bg = "white")
   
   # utilidades para matrices (variables arriba y a la izquierda)
   ejes <- function(df) {
@@ -205,7 +205,7 @@ if (length(res) >= 2) {
     scale_x_discrete(position = "top") + coord_equal() +
     labs(title = "Correlación entre los resultados del GLM de cada variable", x = NULL, y = NULL) +
     tema + theme(panel.grid = element_blank(), axis.ticks = element_blank(), legend.position = "right")
-  ggsave(file.path(carpeta_figuras, "B2_correlacion_resultados_glm.png"), g5, width = tam(length(vars))[1], height = tam(length(vars))[2], dpi = 150, bg = "white")
+  ggsave(file.path(carpeta_figuras, "correlacion_resultados_glm.png"), g5, width = tam(length(vars))[1], height = tam(length(vars))[2], dpi = 150, bg = "white")
   
   #  SNPs significativos (Bonferroni) compartidos entre variables 
   hits <- lapply(res, function(d) d$SNP[d$hit])
@@ -221,7 +221,7 @@ if (length(res) >= 2) {
     scale_x_discrete(position = "top") + coord_equal() +
     labs(title = "SNPs significativos compartidos entre variables", x = NULL, y = NULL) +
     tema + theme(panel.grid = element_blank(), axis.ticks = element_blank(), legend.position = "right")
-  ggsave(file.path(carpeta_figuras, "B3_snps_compartidos.png"), g6, width = tam(length(vars))[1], height = tam(length(vars))[2], dpi = 150, bg = "white")
+  ggsave(file.path(carpeta_figuras, "snps_compartidos.png"), g6, width = tam(length(vars))[1], height = tam(length(vars))[2], dpi = 150, bg = "white")
   
   # tabla: traslape observado vs el que se esperaría por puro azar
   # (si los hits de dos variables fueran independientes: n_A * n_B / N)
