@@ -12,11 +12,6 @@
 #
 #no sé si sería mejor usar el promedio por población de las PCs individuales (de plink2 --pca)
 #
-# cambios del 15 oct:
-#  - se lee matriz_copias_posibles, que guarda matriz_frecuencias_poblacionales.R
-#  - parametro usar_dispersion 
-#  - se quitan SNPs sin variacion antes del PCA 
-#  - nueva columna de dispersión en los resultados
 # ============================================================
 
 
@@ -30,7 +25,7 @@ ruta_matriz_copias_posibles <- "/home/sam/Documents/sur_ecoevo_lab/data/teosinte
 
 ruta_bioclim <- "/home/sam/Documents/sur_ecoevo_lab/data/worldclim/bioclim_por_pop.csv"
 
-variable_bioclim <- "bio7"   # cambio en cada bio (no lo automaticé porque quiero observar cada resultado 1 x 1, en mi mente me da paz)
+variable_bioclim <- "bio1"   # cambio en cada bio (no lo automaticé porque quiero observar cada resultado 1 x 1, en mi mente me da paz)
 n_pcs_correccion <- 10        # cuantas PCs de estructura poblacional incluir como covariable, no sé cuántas convendrían
 
 # TRUE  = quasibinomial: igual que binomial pero estima cuanta variacion "extra" hay entre poblaciones (deriva, historia compartida) y ajusta los p-valores.
@@ -107,7 +102,7 @@ resultados <- data.frame(
   coef_bioclim = NA_real_,
   error_estandar = NA_real_,
   p_valor = NA_real_,
-  dispersion = NA_real_,     # 1 = solo variacion de muestreo; >1 = hay variacion extra entre poblaciones
+  dispersion = NA_real_,     # 1 = solo variacion de muestreo; >1 = hay variación extra entre poblaciones
   convergio = FALSE
 )
 
