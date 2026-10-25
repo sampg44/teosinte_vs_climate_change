@@ -2,7 +2,7 @@
 # visualizar_glm.r
 # versión nueva (24 oct )
 # ay llevo bastantes horas sin comer ayuda
-# Visualiza los resultados de glm_frecuencia_bioclim.R
+# Visualiza los resultados de glm_frecuencia_bioclim.r
 # ==============================================================================
 
 library(ggplot2)
@@ -98,7 +98,7 @@ figuras_por_variable <- function(d, etiqueta) {
   lam <- lambda_gc(d$p_valor)
   d$observado <- -log10(d$p_valor)
   d$grupo_hit <- factor(ifelse(d$hit, "si", "no"), levels = c("no", "si"))
-  etiqueta_umbral <- sprintf("Umbral de Bonferroni (p = %.1e)", umbral_p)
+  etiqueta_umbral <- "Bonferroni"
   
   
   #  QQ-plot 
@@ -112,8 +112,7 @@ figuras_por_variable <- function(d, etiqueta) {
       geom_point(size = 0.8, alpha = 0.7) +
       annotate("text", x = 0, y = lim, label = sprintf("lambda = %.2f", lam),
                hjust = 0, vjust = 1, size = 4.2, colour = "black") +
-      scale_colour_manual(values = c(no = verde, si = morado), breaks = "si",
-                          labels = etiqueta_hit, name = NULL) +
+      scale_colour_manual(values = c(no = verde, si = morado), guide = "none") +
       coord_equal(xlim = c(0, lim), ylim = c(0, lim)) +
       labs(title = paste0(etiqueta, ": QQ-plot de p-valores"),
            x = expression("-log"[10]*"(p) esperado por azar"),
@@ -132,11 +131,9 @@ figuras_por_variable <- function(d, etiqueta) {
   g2 <- ggplot(d, aes(x, observado, colour = grupo)) +
     geom_point(size = 0.7, alpha = 0.8) +
     geom_hline(aes(yintercept = umbral_y, linetype = "u"), colour = "black") +
-    scale_colour_manual(values = c(impar = verde_1, par = verde_2, hit = morado),
-                        breaks = "hit", labels = etiqueta_hit, name = NULL) +
-    scale_linetype_manual(values = c(u = "solid"), labels = etiqueta_umbral, name = NULL) +
+    scale_colour_manual(values = c(impar = verde_1, par = verde_2, hit = morado), guide = "none") +
+    scale_linetype_manual(values = c(u = "dashed"), labels = etiqueta_umbral, name = NULL) +
     scale_x_continuous(breaks = centros, labels = names(largo), expand = c(0.01, 0)) +
-    guides(colour = guide_legend(override.aes = list(size = 2.5, alpha = 1))) +
     labs(title = paste0(etiqueta, ": Manhattan plot"),
          x = "Cromosoma", y = expression("-log"[10]*"(p)")) +
     tema + theme(panel.grid.major.x = element_blank())
@@ -148,10 +145,8 @@ figuras_por_variable <- function(d, etiqueta) {
       geom_point(size = 0.7, alpha = 0.7) +
       geom_vline(xintercept = 0, colour = col_texto, linewidth = 0.3) +
       geom_hline(aes(yintercept = umbral_y, linetype = "u"), colour = "black") +
-      scale_colour_manual(values = c(no = verde, si = morado), breaks = "si",
-                          labels = etiqueta_hit, name = NULL) +
-      scale_linetype_manual(values = c(u = "solid"), labels = etiqueta_umbral, name = NULL) +
-      guides(colour = guide_legend(override.aes = list(size = 2.5, alpha = 1))) +
+      scale_colour_manual(values = c(no = verde, si = morado), guide = "none") +
+      scale_linetype_manual(values = c(u = "dashed"), labels = etiqueta_umbral, name = NULL) +
       labs(title = paste0(etiqueta, ": tamaño del efecto contra significancia"),
            x = "coef_bioclim (cambio en log-odds por +1 unidad de la variable)",
            y = expression("-log"[10]*"(p)")) + tema
