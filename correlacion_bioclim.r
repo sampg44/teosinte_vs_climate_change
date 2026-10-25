@@ -15,10 +15,10 @@ metodo          <- "pearson"   # "pearson" (relación lineal) o "spearman" (rela
 umbral_r        <- 0.7         # |r| >= umbral se considera muy relacionadas (regla práctica de Dormann et al. 2013)
 dir.create(carpeta_salida, recursive = TRUE, showWarnings = FALSE)
 
-morado <- "darkorchid3"; amarillo <- "gold"
+morado <- "#6250d6"; amarillo <- "#c98500"
 tema <- theme_minimal(base_size = 12) +
   theme(panel.grid = element_blank(), axis.ticks = element_blank(), plot.title = element_text(face = "bold"),
-        axis.text = element_text(colour = "gray20"))
+        axis.text = element_text(colour = "#52514e"))
 
 # 2. leer archivo de variables (columnas bio 1 a 19, filas son poblaciones)
 bio <- read.csv(ruta_bioclim, stringsAsFactors = FALSE)
@@ -41,7 +41,7 @@ cl <- expand.grid(v1 = cols_bio, v2 = cols_bio, stringsAsFactors = FALSE)
 cl$r <- as.vector(r[cbind(match(cl$v1, cols_bio), match(cl$v2, cols_bio))])
 cl$v1 <- factor(cl$v1, levels = rev(cols_bio))   # filas: bio1 arriba
 cl$v2 <- factor(cl$v2, levels = cols_bio)        # columnas: bio1 a la izquierda
-cl$txt <- ifelse(abs(cl$r) > 0.7, "white", "gray1")
+cl$txt <- ifelse(abs(cl$r) > 0.7, "white", "#0b0b0b")
 g <- ggplot(cl, aes(v2, v1, fill = r)) +
   geom_tile(colour = "white", linewidth = 1) +
   geom_text(aes(label = sprintf("%.2f", r), colour = txt), size = 3.2) +
