@@ -23,7 +23,7 @@ ruta_bioclim <- "/home/sam/Documents/sur_ecoevo_lab/data/worldclim/bioclim_por_p
 metodo       <- "pearson"                                                                  # el mismo de correlacion_bioclim.r
 ruta_grupos  <- "/home/sam/Documents/sur_ecoevo_lab/exp/oct_2026/19_oct/bioclim/grupos_bioclim_correlacionadas.csv"
 
-carpeta_salida  <- "/home/sam/Documents/sur_ecoevo_lab/exp/nov_2026/03_nov/seleccion_variables_4"
+carpeta_salida  <- "/home/sam/Documents/sur_ecoevo_lab/exp/nov_2026/04_nov/seleccion_variables_4"
 carpeta_figuras <- file.path(carpeta_salida, "figuras")
 
 umbral_r   <- 0.7    # el mismo de correlacion_bioclim.r
@@ -138,38 +138,38 @@ cat("Grupos EMPATADOS (tienes que decidir con criterio biológico):\n")
 for (g in empatados) cat(sprintf("  grupo %s: %s\n", g, paste(tabla$variable[tabla$grupo == as.integer(g) & tabla$candidata], collapse = " o ")))
 
 
-# 4. revisar la lista que tú escogiste
+# 4. revisar la lista escogida
 
 esc <- NULL
 if (is.null(variables_escogidas)) {
-  cat("\nvariables_escogidas está en NULL: llénala con una variable por grupo y vuelve a correr.\n")
+  cat("\nvariables_escogidas está en NULL.\n")
 } else {
   stopifnot(all(variables_escogidas %in% tabla$variable), !anyDuplicated(variables_escogidas))
   esc <- tabla[match(variables_escogidas, tabla$variable), ]
   
-  cat("\n=== Revisión de variables_escogidas ===\n")
+  cat("\nrevisión de variables_escogidas \n")
   conteo <- table(factor(esc$grupo, levels = sort(unique(tabla$grupo))))
-  if (any(conteo == 0)) cat("[AVISO] grupos sin variable escogida:", paste(names(conteo)[conteo == 0], collapse = ", "), "\n")
-  if (any(conteo > 1)) cat("[AVISO] grupos con más de una variable escogida:", paste(names(conteo)[conteo > 1], collapse = ", "), "\n")
-  if (all(conteo == 1)) cat("OK: una variable por grupo.\n")
+  if (any(conteo == 0)) cat("grupos sin variable escogida:", paste(names(conteo)[conteo == 0], collapse = ", "), "\n")
+  if (any(conteo > 1)) cat("grupos con más de una variable escogida:", paste(names(conteo)[conteo > 1], collapse = ", "), "\n")
+  if (all(conteo == 1)) cat("una variable por grupo.\n")
   
   Rsub <- R[variables_escogidas, variables_escogidas]
   altas <- which(abs(Rsub) >= umbral_r & upper.tri(Rsub), arr.ind = TRUE)
   if (nrow(altas) == 0) {
-    cat(sprintf("OK: ningún par de variables escogidas tiene |r| >= %.2f (máximo = %.2f).\n", umbral_r, max(abs(Rsub[upper.tri(Rsub)]))))
+    cat(sprintf("ningún par de variables escogidas tiene |r| >= %.2f (máximo = %.2f).\n", umbral_r, max(abs(Rsub[upper.tri(Rsub)]))))
   } else {
-    cat(sprintf("[AVISO] pares con |r| >= %.2f:\n", umbral_r))
+    cat(sprintf("pares con |r| >= %.2f:\n", umbral_r))
     for (k in seq_len(nrow(altas))) cat(sprintf("  %s - %s: r = %.2f\n", rownames(Rsub)[altas[k, 1]], colnames(Rsub)[altas[k, 2]], Rsub[altas[k, 1], altas[k, 2]]))
   }
   
   vif_conjunto <- tryCatch(diag(solve(Rsub))[variables_escogidas], error = function(e) rep(NA_real_, length(variables_escogidas)))
   esc$vif_en_conjunto <- unname(vif_conjunto)
   if (anyNA(vif_conjunto)) {
-    cat("[AVISO] no se pudo calcular el VIF (matriz singular: hay variables perfectamente correlacionadas)\n")
+    cat("no se pudo calcular el VIF (matriz singular: hay variables perfectamente correlacionadas)\n")
   } else if (max(vif_conjunto) < umbral_vif) {
-    cat(sprintf("OK: VIF del conjunto escogido entre %.2f y %.2f (umbral %d).\n", min(vif_conjunto), max(vif_conjunto), umbral_vif))
+    cat(sprintf("VIF del conjunto escogido entre %.2f y %.2f (umbral %d).\n", min(vif_conjunto), max(vif_conjunto), umbral_vif))
   } else {
-    cat(sprintf("[AVISO] VIF por encima de %d en: %s\n", umbral_vif, paste(variables_escogidas[vif_conjunto >= umbral_vif], collapse = ", ")))
+    cat(sprintf("VIF por encima de %d en: %s\n", umbral_vif, paste(variables_escogidas[vif_conjunto >= umbral_vif], collapse = ", ")))
   }
   print(esc[, c("variable", "grupo", "centralidad", "vif_en_conjunto", "etiqueta")], row.names = FALSE)
   
@@ -204,12 +204,12 @@ g1 <- ggplot(d1, aes(v2, v1, fill = r)) +
   geom_text(data = etq, aes(x = 0.4, y = n_ord + 1 - pos, label = variable, fontface = cara, colour = color), hjust = 1, size = 3.6, inherit.aes = FALSE) +
   geom_text(data = etq, aes(x = pos, y = 0.4, label = variable, fontface = cara, colour = color), angle = 90, hjust = 1, size = 3.6, inherit.aes = FALSE) +
   scale_colour_identity() +
-  scale_fill_viridis_c(option = "D", limits = c(-1, 1), name = "r (correlación de Pearson)",
+  scale_fill_viridis_c(option = "D", limits = c(-1, 1), name = "r (Pearson correlation)",
                        guide = guide_colourbar(title.position = "top", title.hjust = 0.5)) +
   scale_x_discrete(expand = expansion(add = c(1.6, 0.5))) + scale_y_discrete(expand = expansion(add = c(1.6, 0.5))) +
   coord_equal() +
-  labs(title = "Correlación entre variables bioclim, por grupo",
-       subtitle = paste0("líneas negras = separan los grupos; negritas = variable ", nombre_resaltar), x = NULL, y = NULL) + tema +
+  labs(title = "Correlation between bioclimatic variables",
+       subtitle = "black lines to separate groups; selected variables in bold ", x = NULL, y = NULL) + tema +
   theme(panel.grid = element_blank(), axis.text = element_blank(), legend.key.width = unit(1.6, "cm"))
 mostrar_y_guardar(g1, "fig1_correlacion_por_grupo.png", 10, 10)
 
@@ -223,8 +223,8 @@ if (is.null(esc) || anyNA(esc$vif_en_conjunto)) {
   d2 <- d2[order(d2$vif), ]
   d2$variable <- factor(d2$variable, levels = d2$variable)
   d2$pct <- round(100 * (1 - 1 / d2$vif))
-  d2$nivel <- factor(ifelse(d2$vif > umbral_vif, "VIF > 10 (muy redundante)", "VIF <= 10 (aceptable)"),
-                     levels = c("VIF <= 10 (aceptable)", "VIF > 10 (muy redundante)"))
+  d2$nivel <- factor(ifelse(d2$vif > umbral_vif, "VIF > 10 (redundant)", "VIF <= 10 (acceptable)"),
+                     levels = c("VIF <= 10 (acceptable)", "VIF > 10 (redundant)"))
   x_max <- max(umbral_vif * 1.15, max(d2$vif) * 1.35)
   marcas <- c(1, 2, 5, 10)
   g2 <- ggplot(d2, aes(vif, variable, fill = nivel)) +
@@ -236,10 +236,10 @@ if (is.null(esc) || anyNA(esc$vif_en_conjunto)) {
                        sec.axis = sec_axis(~ ., breaks = marcas, labels = paste0(round(100 * (1 - 1 / marcas)), "%"),
                                            name = "% de la variable que las otras escogidas explican")) +
     coord_cartesian(xlim = c(1, x_max)) +
-    labs(title = "Qué tan repetida está cada variable escogida",
-         subtitle = paste(c("Cada barra es el VIF de una variable frente a las otras escogidas.",
-                            "Junto a la barra: el VIF y, entre paréntesis, el % de esa variable",
-                            "que se puede predecir con las demás. Línea punteada: VIF = 10."), collapse = "\n"),
+    labs(title = "How often each selected variable occurs",
+         subtitle = paste(c("Each bar represents the VIF of a variable relative to the other selected variables.",
+         "Next to the bar: the VIF and, the percentage of that variable that can be predicted by the others.",
+         "Dotted line: VIF = 10."), collapse = "\n"),
          y = NULL) + tema +
     theme(axis.title.x.top = element_text(colour = col_texto, size = 10))
   mostrar_y_guardar(g2, "fig2_vif_escogidas.png", 8, 5)
@@ -254,7 +254,7 @@ corte <- 1 - umbral_r
 grupo_hc <- cutree(hc, h = corte)
 mismos_grupos <- length(unique(grupo_hc)) == length(unique(tabla$grupo)) &&
   all(tapply(grupo_hc[tabla$variable], tabla$grupo, function(g) length(unique(g))) == 1)
-if (!mismos_grupos) cat("[AVISO] el corte del dendrograma NO reproduce los grupos de grupos_bioclim_correlacionadas.csv (revisa umbral_r y metodo)\n")
+if (!mismos_grupos) cat("el corte del dendrograma NO reproduce los grupos de grupos_bioclim_correlacionadas.csv (revisa umbral_r y metodo)\n")
 
 # el eje usa la raiz cuadrada de la distancia (x = 1 - sqrt(distancia)) para separar las uniones cercanas a |r| = 1;
 # los numeros del eje son |r| verdaderos
@@ -295,19 +295,16 @@ r_marcas <- c(1, 0.9, 0.8, 0.7, 0.5, 0.3, 0)
 g3 <- ggplot() +
   geom_segment(data = ramas, aes(x = x, xend = xend, y = y, yend = yend, colour = col, linewidth = lw), lineend = "round") +
   geom_segment(aes(x = x_corte, xend = x_corte, y = 0.4, yend = n_v + 0.6), linetype = "dashed", colour = "#0b0b0b") +
-  annotate("text", x = x_corte, y = n_v + 1.1, label = sprintf("corte: |r| = %.1f", umbral_r), size = 3.4, fontface = "bold") +
+  annotate("text", x = x_corte, y = n_v + 1.1, label = sprintf("cut: |r| = %.1f", umbral_r), size = 3.4, fontface = "bold") +
   geom_point(data = hojas[!hojas$escogida, ], aes(x = 1, y = y), shape = 21, fill = "white", colour = col_texto, size = 2.2) +
   geom_point(data = hojas[hojas$escogida, ], aes(x = 1, y = y), shape = 21, fill = "#0b0b0b", colour = "#0b0b0b", size = 4) +
   geom_text(data = hojas, aes(x = 1.04, y = y, label = variable, fontface = cara), hjust = 0, size = 3.8, colour = "#0b0b0b") +
   geom_segment(data = corchetes, aes(x = 1.2, xend = 1.2, y = y1, yend = y2), colour = col_texto, linewidth = 0.6) +
-  geom_text(data = corchetes, aes(x = 1.23, y = ym, label = paste("grupo", grupo)), hjust = 0, size = 3.4, colour = col_texto) +
+  geom_text(data = corchetes, aes(x = 1.23, y = ym, label = paste("group", grupo)), hjust = 0, size = 3.4, colour = col_texto) +
   scale_colour_identity() + scale_linewidth_identity() +
-  scale_x_continuous(breaks = x_de(1 - r_marcas), labels = sprintf("%.1f", r_marcas), name = "|r| mínimo entre las variables unidas (1 = idénticas)") +
+  scale_x_continuous(breaks = x_de(1 - r_marcas), labels = sprintf("%.1f", r_marcas), name = "Minimum |r| among the correlated variables") +
   coord_cartesian(xlim = c(x_raiz - 0.02, 1.4), ylim = c(0.3, n_v + 1.5), clip = "off") +
-  labs(title = "Cómo se formaron los grupos de variables",
-       subtitle = paste0("Las variables unidas con línea de color (a la derecha del corte) forman un grupo.\n",
-                         "Círculo negro y negritas: variable ", nombre_resaltar, " de cada grupo."),
-       caption = "Eje no lineal: hay más espacio cerca de 1.", y = NULL) + tema +
+  labs(title = "Formation of Groups of Bioclimatic Variables", y = NULL) + tema +
   theme(panel.grid.major.y = element_blank(), panel.grid.minor = element_blank(), axis.text.y = element_blank(),
         plot.caption = element_text(hjust = 0, colour = col_texto))
 mostrar_y_guardar(g3, "fig3_dendrograma_grupos_y_escogidas.png", 9, 6.5)
